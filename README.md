@@ -511,3 +511,10 @@ Con crontab, para que ejecute cada día a las 5 AM:
 ## 8) Herramientas de orquestación de flujos de datos
 
 https://github.com/sercasti/datalaketools
+https://github.com/account
+<br><br>
+
+### Equipo de la cohorte Dataft-17 que contribuyeron en las prácticas y recopilaron las [evidencias](/Evidencia/) :muscle: 
+
+| [<img src="https://avatars.githubusercontent.com/JohannaRangel" width=115><br><sub>Johanna Rangel</sub>](https://github.com/JohannaRangel) | [<img src="https://avatars.githubusercontent.com/u/137807368?v=4" width=115><br><sub>Francisco Rombini</sub>](https://github.com/Frombini) |  [<img src="https://avatars.githubusercontent.com/u/120042696?v=4" width=115><br><sub>Gretel Sanchez</sub>](https://github.com/KGSanchezM) |
+| :---: | :---: | :---: |

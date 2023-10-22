@@ -1,0 +1,98 @@
+Creamos una consulta para comparar
+
+SELECT
+    v.ano AS ano,
+    v.mes AS mes,
+    v.Ventas AS Ventas,
+    c.Compras AS compras,
+    g.Gastos AS Gasto,
+    v.Ventas - c.Compras - g.Gastos AS Ingreso
+FROM (
+    SELECT
+        YEAR(Fecha) AS ano,
+        MONTH(Fecha) AS mes,
+        SUM(Precio * Cantidad) AS Ventas
+    FROM venta
+    WHERE YEAR(Fecha) BETWEEN 2019 AND 2020
+    GROUP BY YEAR(Fecha), MONTH(Fecha)
+) v
+JOIN (
+    SELECT
+        YEAR(Fecha) AS ano,
+        MONTH(Fecha) AS mes,
+        SUM(Precio * Cantidad) AS Compras
+    FROM compra
+    WHERE YEAR(Fecha) BETWEEN 2019 AND 2020
+    GROUP BY YEAR(Fecha), MONTH(Fecha)
+) c ON (v.mes = c.mes AND v.ano = c.ano)
+JOIN (
+    SELECT
+        YEAR(Fecha) AS ano,
+        MONTH(Fecha) AS mes,
+        SUM(Monto) AS Gastos
+    FROM gasto
+    WHERE YEAR(Fecha) BETWEEN 2019 AND 2020
+    GROUP BY YEAR(Fecha), MONTH(Fecha)
+) g ON (v.mes = g.mes AND v.ano = g.ano)
+ORDER BY mes
+LIMIT 5;
+
+
+Creacion del indice 
+
+Hive no permite la creación de un indice en una columna tipo fecha
+Por el tipo de consulta , los filtros se hacen con el año , por lo que agregare una columna año.
+Pero hive no me deja agregar columnas facilmente  asi que se crea una nueva tabla
+
+CREATE TABLE nueva_venta AS
+SELECT *, YEAR(fecha) AS ano
+FROM venta;
+
+
+CREATE INDEX idx_venta_ano ON TABLE nueva_venta (ano)
+AS 'org.apache.hadoop.hive.ql.index.compact.CompactIndexHandler'
+WITH DEFERRED REBUILD;
+
+
+
+SELECT
+    v.ano AS ano,
+    c.mes AS mes,
+    v.Ventas AS Ventas,
+    c.Compras AS compras,
+    g.Gastos AS Gasto,
+    v.Ventas - c.Compras - g.Gastos AS Ingreso
+FROM (
+    SELECT
+        ano,
+        SUM(Precio * Cantidad) AS Ventas
+    FROM nueva_venta
+    WHERE ano BETWEEN 2019 AND 2020
+    GROUP BY ano
+) v
+JOIN (
+    SELECT
+        YEAR(Fecha) AS ano,
+        MONTH(Fecha) AS mes,
+        SUM(Precio * Cantidad) AS Compras
+    FROM compra
+    WHERE YEAR(Fecha) BETWEEN 2019 AND 2020
+    GROUP BY YEAR(Fecha), MONTH(Fecha)
+) c ON (v.ano = c.ano)
+JOIN (
+    SELECT
+        YEAR(Fecha) AS ano,
+        MONTH(Fecha) AS mes,
+        SUM(Monto) AS Gastos
+    FROM gasto
+    WHERE YEAR(Fecha) BETWEEN 2019 AND 2020
+    GROUP BY YEAR(Fecha), MONTH(Fecha)
+) g ON (v.ano = g.ano)
+ORDER BY mes
+LIMIT 5;
+
+
+
+
+
+

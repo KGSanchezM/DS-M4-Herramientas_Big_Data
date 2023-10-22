@@ -1,0 +1,63 @@
+ETL con Spark
+
+1.- Entramos a Spark
+ sudo docker exec -it spark-master bash
+ /spark/bin/pyspark --master spark://spark-master:7077
+
+2.-Importamos los modulos
+
+from pyspark.sql import *
+from pyspark.sql.types import *
+from pyspark.sql.functions import *
+
+3.- Leemos la tabla venta
+
+venta = spark.read.option("compression.codec", "snappy").option("mergeSchema", "true").parquet("hdfs://namenode:9000/data2/venta")
+
+(Aqui ponemos la imagen de tablaventa)
+
+4.- Creamos la tabla venta_out donde quitamos las columnas que tengan valores nulos
+y calculamos el promedio y desviacion estandar por IdProducto
+
+ventas_out = venta.na.drop(subset=['precio','cantidad']).groupBy("idproducto").agg(mean(venta.precio).alias("promedio"), stddev(venta.precio).alias("stddev"))
+
+5.- Agregamos las columnas PrecioMaximo y PrecioMinimo el cual es precio que se encuntra a tres desviaciones estandar por encima y por debajo del promedio
+
+(Aqui va la imagen de ventas_out)
+
+6.- Se realiza un join entre las tablas venta y ventas_out para sacar el precio maximo y minimo por cada IdProducto
+
+venta = venta.alias("v").join(ventas_out.alias("o"), venta['idproducto'] == ventas_out['idproducto']).select("v.idventa","v.fecha","v.fecha_entrega","v.idcanal","v.idcliente","v.idsucursal","v.idempleado","v.idproducto","v.precio","v.cantidad","o.promedio","o.stddev","o.PrecioMaximo","o.PrecioMinimo")
+
+7.- Cambiamos el tipo de dato de las columnas PrecioMaximo y PrecioMinimo
+
+venta.withColumn("PrecioMaximo",col("PrecioMaximo").cast("float"))
+
+venta.withColumn("PrecioMinimo",col("PrecioMinimo").cast("float"))
+
+8.- Creamos una función para determinar si un valor es atipico o no 
+
+def detecta_outlier(valor, maximo, minimo):
+    return (valor < minimo) or (valor > maximo)
+
+9.- Creamos una función, e devolvera True o False dependiendo si el valor es un outlier o no
+
+udf_detecta_outlier = udf(lambda valor, MaxLimit, MinLimit: detecta_outlier(valor, MaxLimit, MinLimit), BooleanType())
+
+
+10.- Eliminamos las filas en las que los valores de precio o cantidad sean nulos
+
+venta = venta.na.drop(subset=['precio','cantidad'])
+
+11.- Finalmente filtramos la tabla venta , para solo dejar las filas que no sean outliers
+
+venta = venta.withColumn("esOutlier", udf_detecta_outlier(venta.precio, venta.PrecioMaximo, venta.PrecioMinimo)).filter("NOT esOutlier")
+
+12.- Mantenemos en la tabla venta solo las columnas que venían originalmente y descartamos las columnas que utilizamos de apoyo para filtrar los outliers
+
+venta = venta.select(["idventa","fecha","fecha_entrega","idcanal","idcliente","idsucursal","idempleado","idproducto","precio","cantidad"])
+
+(Agregamos la imagen ventafiltrada)
+
+
+
