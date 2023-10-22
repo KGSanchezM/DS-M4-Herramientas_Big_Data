@@ -1,4 +1,4 @@
-# Resolución proyecto integrador
+# Proyecto integrador
 
 En este archivo, presentaré tanto el código empleado para abordar los ejercicios propuestos en el proyecto integrador, como las evidencias de las actividades realizadas a lo largo del proyecto.
 
