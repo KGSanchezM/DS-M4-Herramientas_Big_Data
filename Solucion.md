@@ -205,7 +205,7 @@ LIMIT 5;
 
 El tiempo de ejecución de la consulta fue de 21.959 segundos.
 
-![Sin Índices](Evidencia\Indices\Sin%20indices.png)
+![Sin Índices](Evidencia/Indices/Sin%20indices.png)
 
 
 2.- Creación del índice
