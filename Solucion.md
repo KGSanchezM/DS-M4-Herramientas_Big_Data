@@ -229,7 +229,7 @@ WITH DEFERRED REBUILD;
 
 El tiempo de ejecución de la consulta fue de 19.534 segundos.
 
-![ConÍndices](Evidencia\Indices\Con%20indices.png)
+![ConÍndices](Evidencia/Indices/Con%20indices.png)
 
 La creación de índices en nuestras tablas ha demostrado una  mejora en el tiempo de ejecución de las consultas en comparación con las tablas sin índices. 
 
